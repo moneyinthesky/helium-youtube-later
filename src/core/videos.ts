@@ -75,6 +75,21 @@ export function restoreVideo(videos: Video[], restored: Video, index: number): V
   return [...videos.slice(0, index), video, ...videos.slice(index)];
 }
 
+/**
+ * Moves a video up (negative) or down To watch, stopping at the ends. Watched
+ * videos stay where they are in the stored list, so that putting one back
+ * returns it to about where it was.
+ */
+export function moveVideo(videos: Video[], id: string, by: number): Video[] {
+  const order = toWatch(videos);
+  const from = order.findIndex((v) => v.id === id);
+  if (from === -1) return videos;
+  const to = Math.max(0, Math.min(from + by, order.length - 1));
+  if (to === from) return videos;
+  order.splice(to, 0, ...order.splice(from, 1));
+  return videos.map((v) => (v.watchedAt === undefined ? (order.shift() as Video) : v));
+}
+
 const updateVideo = (videos: Video[], id: string, change: (video: Video) => Video) =>
   videos.map((v) => (v.id === id ? change(v) : v));
 

@@ -4,6 +4,7 @@ import {
   addVideo,
   applyProgress,
   markWatched,
+  moveVideo,
   putBack,
   removeVideo,
   restoreVideo,
@@ -94,6 +95,8 @@ async function onPanelMessage(message: PanelMessage): Promise<void> {
     }
     case "remove":
       return updateVideos((videos) => ({ videos: removeVideo(videos, message.id) }));
+    case "move":
+      return updateVideos((videos) => ({ videos: moveVideo(videos, message.id, message.by) }));
     case "mark-watched":
       return updateVideos((videos) => ({ videos: markWatched(videos, message.id, now) }));
     case "put-back":

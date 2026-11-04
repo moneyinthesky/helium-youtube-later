@@ -30,6 +30,7 @@ After pulling changes, run `pnpm build` again and click the reload icon on the e
 | Right-click a YouTube link, on any site | **Save video to YouTube Later** |
 | Click a video in the panel | Play it in your pinned YouTube tab and hide the panel. ⌘-click keeps the panel open. |
 | Hover over a video in the panel | ✓ mark as watched, ✕ remove |
+| Drag a video in the panel | Change its place in To watch |
 
 Saving on YouTube shows a card at the top right of the page, with the video's thumbnail, so you can see which one you got. The toolbar icon's badge counts what's left to watch. Change the shortcuts at `chrome://extensions/shortcuts`.
 
@@ -44,8 +45,12 @@ The panel takes keyboard focus when it opens. The video you're watching is selec
 | ⌘Enter (Ctrl+Enter) | Play the video and keep the panel open |
 | Backspace or Delete | Remove the video and select the next one |
 | W | Mark the video as watched, or put it back if it's in the Watched section |
+| ⌥↑ ⌥↓ (Alt+↑ ↓) | Move the video up or down To watch. Hold to keep going. |
+| ⌘↑ ⌘↓ (Ctrl+↑ ↓) | Send the video to the top or bottom of To watch |
 | ⌘Z (Ctrl+Z) | Undo the last removal or move to Watched |
 | Esc | Hide the panel |
+
+New videos go to the top, and everything else stays in the order you put it. The Watched section can't be reordered: it's always newest first.
 
 ### Playing a video
 

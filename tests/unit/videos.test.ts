@@ -5,6 +5,7 @@ import {
   applyProgress,
   isFinished,
   markWatched,
+  moveVideo,
   needsDetails,
   progressOf,
   pruneWatched,
@@ -58,6 +59,51 @@ describe("undo", () => {
     const before = video("a", { position: 30 });
     const after = markWatched([before], "a", 5);
     expect(restoreVideo(after, before, 0)).toEqual([{ ...before, finishHeld: true }]);
+  });
+});
+
+describe("moveVideo", () => {
+  const ids = (videos: Video[]) => videos.map((v) => v.id);
+  const list = [video("a"), video("b"), video("c"), video("d")];
+
+  it("moves a video up or down", () => {
+    expect(ids(moveVideo(list, "b", 1))).toEqual(["a", "c", "b", "d"]);
+    expect(ids(moveVideo(list, "c", -1))).toEqual(["a", "c", "b", "d"]);
+    expect(ids(moveVideo(list, "a", 2))).toEqual(["b", "c", "a", "d"]);
+  });
+
+  it("stops at the ends", () => {
+    expect(ids(moveVideo(list, "c", -99))).toEqual(["c", "a", "b", "d"]);
+    expect(ids(moveVideo(list, "b", 99))).toEqual(["a", "c", "d", "b"]);
+  });
+
+  it("returns the same list when nothing moves, so nothing is saved", () => {
+    expect(moveVideo(list, "a", -1)).toBe(list);
+    expect(moveVideo(list, "d", 1)).toBe(list);
+    expect(moveVideo(list, "b", 0)).toBe(list);
+    expect(moveVideo(list, "missing", 1)).toBe(list);
+  });
+
+  describe("with watched videos among the rest", () => {
+    const mixed = [video("a"), video("w", { watchedAt: 5 }), video("b"), video("c")];
+
+    it("moves past them in one step, as they aren't in To watch", () => {
+      const moved = moveVideo(mixed, "a", 1);
+      expect(ids(toWatch(moved))).toEqual(["b", "a", "c"]);
+    });
+
+    it("leaves them where they were", () => {
+      expect(ids(moveVideo(mixed, "c", -2))).toEqual(["c", "w", "a", "b"]);
+    });
+
+    it("doesn't move a watched video", () => {
+      expect(moveVideo(mixed, "w", 1)).toBe(mixed);
+    });
+  });
+
+  it("keeps everything else about the video", () => {
+    const [first] = moveVideo([video("a"), video("b", { position: 12, duration: 40 })], "b", -1);
+    expect(first).toMatchObject({ id: "b", position: 12, duration: 40 });
   });
 });
 

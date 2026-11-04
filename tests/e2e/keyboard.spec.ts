@@ -212,6 +212,146 @@ test("the Watched section can be opened and used from the keyboard", async ({ wo
   await expect(panel.locator(`#to-watch .video[data-id="${FIRST}"]`)).toBeAttached();
 });
 
+const order = (panel: Page) => panel.locator("#to-watch .video").evaluateAll((all) => all.map((v) => (v as HTMLElement).dataset.id));
+
+test("⌥↓ and ⌥↑ move the selected video, which stays selected", async ({ worker, panel }) => {
+  await openPanelWithVideos(worker, panel);
+  await panel.keyboard.press("Alt+ArrowDown");
+  await expect.poll(() => order(panel)).toEqual([SECOND, FIRST, THIRD]);
+  await selected(panel, FIRST);
+  await panel.keyboard.press("Alt+ArrowDown");
+  await expect.poll(() => order(panel)).toEqual([SECOND, THIRD, FIRST]);
+  await selected(panel, FIRST);
+  await panel.keyboard.press("Alt+ArrowUp");
+  await expect.poll(() => order(panel)).toEqual([SECOND, FIRST, THIRD]);
+  await selected(panel, FIRST);
+  expect(await ids(worker)).toEqual([SECOND, FIRST, THIRD]);
+});
+
+test("⌘↑ and ⌘↓ send the video to the top and bottom", async ({ worker, panel }) => {
+  await openPanelWithVideos(worker, panel);
+  await panel.keyboard.press("ArrowDown");
+  await panel.keyboard.press("Meta+ArrowDown");
+  await expect.poll(() => order(panel)).toEqual([FIRST, THIRD, SECOND]);
+  await selected(panel, SECOND);
+  await panel.keyboard.press("Meta+ArrowUp");
+  await expect.poll(() => order(panel)).toEqual([SECOND, FIRST, THIRD]);
+  await selected(panel, SECOND);
+});
+
+test("holding ⌥↓ keeps moving the video, one place per repeat", async ({ worker, panel }) => {
+  await openPanelWithVideos(worker, panel);
+  await panel.keyboard.down("Alt");
+  await panel.keyboard.down("ArrowDown");
+  await panel.keyboard.down("ArrowDown"); // a second down with no up is a key repeat
+  await panel.keyboard.up("ArrowDown");
+  await panel.keyboard.up("Alt");
+  await expect.poll(() => order(panel)).toEqual([SECOND, THIRD, FIRST]);
+});
+
+test("a video moves past watched ones in one press, and they stay put", async ({ worker, panel }) => {
+  await worker.evaluate(
+    ([top, done, last]) =>
+      chrome.storage.local.set({
+        videos: [
+          { id: top, title: "Top", channel: "C", addedAt: 3, duration: 40, checkedAt: Date.now() },
+          { id: done, title: "Done", channel: "C", addedAt: 2, duration: 40, watchedAt: Date.now() },
+          { id: last, title: "Last", channel: "C", addedAt: 1, duration: 40, checkedAt: Date.now() },
+        ],
+      }),
+    [FIRST, SECOND, THIRD],
+  );
+  await panel.reload();
+  await selected(panel, FIRST);
+  await panel.keyboard.press("Alt+ArrowDown");
+  await expect.poll(() => order(panel)).toEqual([THIRD, FIRST]);
+  expect(await ids(worker)).toEqual([THIRD, SECOND, FIRST]);
+});
+
+test("watched videos can't be moved", async ({ worker, panel }) => {
+  await openPanelWithVideos(worker, panel);
+  await panel.keyboard.press("w");
+  await selected(panel, SECOND);
+  await panel.keyboard.press("w");
+  await expect(panel.locator("#watched .video")).toHaveCount(2);
+  await panel.locator("#watched-section summary").click();
+  const row = panel.locator("#watched .video").first();
+  await row.locator(".open").focus();
+  const before = await ids(worker);
+  await panel.keyboard.press("Alt+ArrowDown");
+  await panel.keyboard.press("Meta+ArrowDown");
+  await panel.keyboard.press("ArrowUp"); // a round trip through the worker, so the moves above have been seen
+  expect(await ids(worker)).toEqual(before);
+  await expect(row).toHaveAttribute("draggable", "false");
+  await expect(panel.locator("#to-watch .video").first()).toHaveAttribute("draggable", "true");
+});
+
+test("a long list scrolls to follow the video you're moving", async ({ worker, panel }) => {
+  await worker.evaluate(() =>
+    chrome.storage.local.set({
+      videos: Array.from({ length: 30 }, (_, i) => ({
+        id: `v${String(i).padStart(10, "0")}`,
+        title: `Video ${i}`,
+        channel: "C",
+        addedAt: i,
+        duration: 40,
+        checkedAt: Date.now(),
+      })),
+    }),
+  );
+  await panel.reload();
+  const moved = row(panel, "v0000000000");
+  await expect(moved.locator(".open")).toBeFocused();
+  await panel.keyboard.press("Meta+ArrowDown");
+  await expect.poll(() => order(panel).then((list) => list.at(-1))).toBe("v0000000000");
+  await expect(moved.locator(".open")).toBeFocused();
+  await expect(moved).toBeInViewport();
+});
+
+test("dragging a video moves it, selects it, and doesn't play it", async ({ worker, panel }) => {
+  await openPanelWithVideos(worker, panel);
+  await row(panel, THIRD).dragTo(row(panel, FIRST), { targetPosition: { x: 20, y: 2 } });
+  await expect.poll(() => ids(worker)).toEqual([THIRD, FIRST, SECOND]);
+  expect(await order(panel)).toEqual([THIRD, FIRST, SECOND]);
+  await selected(panel, THIRD);
+  expect(panel.isClosed()).toBe(false);
+  expect(await worker.evaluate(() => chrome.tabs.query({ pinned: true }))).toHaveLength(0);
+  await expect(row(panel, THIRD)).not.toHaveClass(/dragging/);
+});
+
+test("dragging by the thumbnail moves the row", async ({ worker, panel }) => {
+  const pixel = Buffer.from("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7", "base64");
+  await panel.route(/ytimg/, (route) => route.fulfill({ contentType: "image/gif", body: pixel }));
+  await openPanelWithVideos(worker, panel);
+  await expect(row(panel, FIRST).locator("img")).toBeVisible(); // a thumbnail that failed to load is hidden
+  await row(panel, FIRST).locator("img").dragTo(row(panel, SECOND), { targetPosition: { x: 20, y: 70 } });
+  await expect.poll(() => ids(worker)).toEqual([SECOND, FIRST, THIRD]);
+});
+
+test("letting go below the last video puts it at the bottom", async ({ worker, panel }) => {
+  await openPanelWithVideos(worker, panel);
+  await row(panel, FIRST).dragTo(panel.locator("main"), { targetPosition: { x: 40, y: 500 } });
+  await expect.poll(() => ids(worker)).toEqual([SECOND, THIRD, FIRST]);
+});
+
+test("a cancelled drag leaves the list as it was", async ({ worker, panel }) => {
+  await openPanelWithVideos(worker, panel);
+  const from = await row(panel, FIRST).boundingBox();
+  const to = await row(panel, THIRD).boundingBox();
+  await panel.mouse.move(from!.x + 20, from!.y + 20);
+  await panel.mouse.down();
+  await panel.mouse.move(to!.x + 20, to!.y + 10, { steps: 5 });
+  await panel.mouse.move(to!.x + 20, to!.y + to!.height - 2, { steps: 5 });
+  await expect.poll(() => order(panel)).toEqual([SECOND, THIRD, FIRST]);
+  await panel.evaluate(() => {
+    const row = document.querySelector(".video.dragging") as HTMLElement;
+    row.dispatchEvent(new DragEvent("dragend", { bubbles: true }));
+  });
+  await expect.poll(() => order(panel)).toEqual(IDS);
+  await panel.mouse.up();
+  expect(await ids(worker)).toEqual(IDS);
+});
+
 test("the selection survives the list changing around it", async ({ worker, panel }) => {
   await openPanelWithVideos(worker, panel);
   await panel.keyboard.press("ArrowDown");
@@ -242,5 +382,5 @@ test("keys on a row's own buttons do what the button does", async ({ worker, pan
 test("the key hints only show when there's a list", async ({ worker, panel }) => {
   await expect(panel.locator("#keys")).toBeHidden();
   await openPanelWithVideos(worker, panel);
-  await expect(panel.locator("#keys")).toHaveText(/play.*remove.*watched/s);
+  await expect(panel.locator("#keys")).toHaveText(/play.*remove.*watched.*move/s);
 });

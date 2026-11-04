@@ -4,6 +4,7 @@ import type { ProgressSample, Video } from "./videos";
 export type PanelMessage =
   | { type: "open"; id: string; windowId: number }
   | { type: "remove"; id: string }
+  | { type: "move"; id: string; by: number }
   | { type: "mark-watched"; id: string }
   | { type: "put-back"; id: string }
   | { type: "restore"; video: Video; index: number }

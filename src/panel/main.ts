@@ -89,6 +89,7 @@ interface Row {
   root: HTMLLIElement;
   open: HTMLButtonElement;
   update(video: Video): void;
+  move(by: number): void;
   remove(): void;
   toggleWatched(): void;
 }
@@ -127,6 +128,7 @@ function createRow(id: string): Row {
   const open = part<HTMLButtonElement>(".open");
   const actions = part<HTMLElement>(".actions");
 
+  image.draggable = false; // or dragging the thumbnail drags the picture, not the row
   image.addEventListener("error", () => image.classList.add("broken"));
   image.src = thumbnailUrl(id);
   open.addEventListener("click", (event) => void play(id, event.metaKey || event.ctrlKey));
@@ -138,10 +140,12 @@ function createRow(id: string): Row {
   return {
     root,
     open,
+    move: (by) => void send({ type: "move", id, by }),
     remove: () => removeWithUndo(video),
     toggleWatched: () => void send({ type: video.watchedAt === undefined ? "mark-watched" : "put-back", id }),
     update(next) {
       video = next;
+      root.draggable = next.watchedAt === undefined;
       title.textContent = displayTitle(next);
       channel.textContent = next.channel;
       open.title = displayTitle(next);
@@ -291,11 +295,67 @@ function moveSelection(step: 1 | -1): void {
   select(index === -1 ? items[0] : items[index + step]);
 }
 
+/** The row being dragged. */
+let dragged: HTMLElement | undefined;
+
+/** Where the dragged row would land, going by the rows' midpoints. */
+function rowBelow(pointerY: number): Element | null {
+  const others = [...toWatchList.children].filter((row) => row !== dragged);
+  return others.find((row) => {
+    const { top, height } = row.getBoundingClientRect();
+    return pointerY < top + height / 2;
+  }) ?? null;
+}
+
+toWatchList.addEventListener("dragstart", (event) => {
+  dragged = event.target as HTMLElement;
+  if (event.dataTransfer) event.dataTransfer.effectAllowed = "move";
+  // Next frame, as the picture that follows the pointer is taken after this event.
+  requestAnimationFrame(() => dragged?.classList.add("dragging"));
+});
+
+function endDrag(): void {
+  dragged?.classList.remove("dragging");
+  dragged = undefined;
+}
+
+// The row moves as you drag, so where it's drawn is where it will land. The
+// whole panel counts, so letting go just below the last row isn't a cancel.
+document.addEventListener("dragover", (event) => {
+  if (!dragged) return;
+  event.preventDefault();
+  const below = rowBelow(event.clientY);
+  if (dragged.nextElementSibling !== below) toWatchList.insertBefore(dragged, below);
+});
+
+document.addEventListener("drop", (event) => {
+  const id = dragged?.dataset.id;
+  if (!dragged || !id) return;
+  event.preventDefault();
+  const from = toWatch(current).findIndex((v) => v.id === id);
+  const by = [...toWatchList.children].indexOf(dragged) - from;
+  if (by !== 0) rows.get(id)?.move(by);
+  select(rows.get(id)?.open);
+  endDrag();
+});
+
+// Still dragging here means it was cancelled, which leaves the row out of place.
+toWatchList.addEventListener("dragend", () => {
+  if (!dragged) return;
+  endDrag();
+  draw(current);
+});
+
 /** Returns whether the key did something. */
 function handleKey(event: KeyboardEvent): boolean {
   const command = event.metaKey || event.ctrlKey;
   const key = event.key.toLowerCase();
   const row = selectedRow();
+  if (row && (key === "arrowup" || key === "arrowdown") && (command || event.altKey)) {
+    const places = command ? current.length : 1; // ⌘ goes all the way
+    row.move(key === "arrowup" ? -places : places);
+    return true;
+  }
   if (key === "z" && command && !event.shiftKey) {
     undoLast();
     return true;

@@ -12,6 +12,10 @@ The automated tests use a fake YouTube and can't press real keys, so run these i
 - [ ] Open the panel while watching a video further down the list. That video is selected, and scrolled into view.
 - [ ] Enter plays the selected video and hides the panel, and with Zen mode's top bar unpinned, the toolbar goes too.
 - [ ] After Enter, YouTube's own keys work in the pinned tab without clicking it (K to pause).
+- [ ] ⌥↑ and ⌥↓ move the selected video, and holding one keeps it moving. ⌘↑ and ⌘↓ send it to the top and bottom.
+- [ ] Drag a video to a new place, by its title and by its thumbnail. It lands there, and doesn't play.
+- [ ] Start dragging a video, press Esc, and it goes back to where it was.
+- [ ] Drag a video towards the top or bottom of a long list. The list scrolls.
 - [ ] A key chosen on `chrome://extensions/shortcuts` toggles the panel. For ⌘Y on a Mac, see the README first.
 
 ## Saving
