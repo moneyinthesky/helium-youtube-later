@@ -46,9 +46,11 @@ test("clicking a video plays it in the pinned YouTube tab", async ({ context, wo
   await saveLink(worker, watchUrl(VIDEO_A));
   const pinned = await pinnedPage(context, worker, feedUrl);
   const before = (await tabs(worker)).length;
+  await panel.bringToFront();
   await row(panel, VIDEO_A).locator(".open").click();
   await expect(pinned).toHaveURL(watchUrl(VIDEO_A));
-  expect(await tabs(worker)).toHaveLength(before);
+  await expect.poll(() => panel.isClosed()).toBe(true);
+  expect(await tabs(worker)).toHaveLength(before - 1); // only the panel, which is a tab here, has gone
   expect((await tabs(worker)).find((t) => t.pinned)?.active).toBe(true);
 });
 

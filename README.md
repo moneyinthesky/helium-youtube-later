@@ -25,13 +25,27 @@ After pulling changes, run `pnpm build` again and click the reload icon on the e
 
 | Do this | To |
 |---|---|
-| **⌘⇧Y** (Ctrl+Shift+Y), or click the toolbar icon | Open or close the panel |
+| **⌘⇧Y** (Ctrl+Shift+Y), or click the toolbar icon | Open or close the panel. To use another key, see [Shortcut](#shortcut). |
 | **⌘⇧S** (Ctrl+Shift+S) on YouTube | Save the thumbnail under the pointer, or if there isn't one, the video you're on |
 | Right-click a YouTube link, on any site | **Save video to YouTube Later** |
-| Click a video in the panel | Play it in your pinned YouTube tab |
+| Click a video in the panel | Play it in your pinned YouTube tab and hide the panel. ⌘-click keeps the panel open. |
 | Hover over a video in the panel | ✓ mark as watched, ✕ remove |
 
 Saving on YouTube shows a card at the top right of the page, with the video's thumbnail, so you can see which one you got. The toolbar icon's badge counts what's left to watch. Change the shortcuts at `chrome://extensions/shortcuts`.
+
+### From the keyboard
+
+The panel takes keyboard focus when it opens. The video you're watching is selected if it's in the list, whether that's in the tab you're on or your pinned YouTube tab. Otherwise it's the top video.
+
+| Key | Does |
+|---|---|
+| ↑ ↓ | Move through the list. "Watched" is on the list too: press Enter there to open or close the section. |
+| Enter | Play the video and hide the panel |
+| ⌘Enter (Ctrl+Enter) | Play the video and keep the panel open |
+| Backspace or Delete | Remove the video and select the next one |
+| W | Mark the video as watched, or put it back if it's in the Watched section |
+| ⌘Z (Ctrl+Z) | Undo the last removal or move to Watched |
+| Esc | Hide the panel |
 
 ### Playing a video
 
@@ -40,6 +54,18 @@ Videos open in your pinned YouTube tab, replacing what's playing there. The pinn
 Videos you've started resume about where you stopped, and show a red progress bar. Anything under 10 seconds in starts from the beginning.
 
 That includes videos you started before saving them, as long as you're signed in to YouTube in this browser: YouTube's resume position is read when you save a video. Videos you haven't played since saving them are checked again, at most once a day, when the panel opens. Once you've played a video, its progress comes from the player instead, so watching it on another device doesn't change the panel.
+
+### Shortcut
+
+To use a different key:
+
+1. Open `chrome://extensions/shortcuts`.
+2. Under YouTube Later, click the pencil next to **Activate the extension**.
+3. Press the key you want.
+
+Your choice survives updates.
+
+⌘⇧Y is the default because Chromium won't let an extension claim a key the browser already uses: asking for ⌘Y leaves the panel with no shortcut at all. On a Mac, ⌘Y also belongs to the **History** menu, so pressing it on the shortcuts page can open History instead of being recorded. To use it, first give that menu item another key in **System Settings → Keyboard → Keyboard Shortcuts → App Shortcuts**, using the item's exact name from the History menu, then quit and reopen the browser and follow the steps above.
 
 ### Finishing a video
 

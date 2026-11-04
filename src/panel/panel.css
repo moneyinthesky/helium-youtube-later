@@ -93,6 +93,12 @@ main {
   border-radius: 8px;
 }
 
+.open:focus,
+summary:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
 .thumb {
   position: relative;
   flex: none;
@@ -163,18 +169,23 @@ main {
   text-overflow: ellipsis;
 }
 
-/* Over the thumbnail, so titles keep the full width. */
+/*
+ * Over the thumbnail, so titles keep the full width. Only for the mouse, or for
+ * Tab: the selected row shouldn't have its thumbnail covered. Faded rather than
+ * hidden, so Tab can still reach them.
+ */
 .actions {
   position: absolute;
   top: 10px;
   left: 10px;
-  display: none;
+  display: flex;
   gap: 4px;
+  opacity: 0;
 }
 
 .video:hover .actions,
-.video:focus-within .actions {
-  display: flex;
+.actions:focus-within {
+  opacity: 1;
 }
 
 .actions button {
@@ -210,12 +221,33 @@ details {
 
 summary {
   padding: 10px 8px;
+  border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
 }
 
 details .thumb img {
   opacity: 0.6;
+}
+
+#keys {
+  display: flex;
+  gap: 12px;
+  margin: 0;
+  padding: 6px 12px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 11px;
+}
+
+#keys[hidden] {
+  display: none;
+}
+
+#keys kbd {
+  font: inherit;
+  font-weight: 600;
+  color: var(--text);
 }
 
 footer {
@@ -239,7 +271,7 @@ footer button:hover {
 #snackbar {
   position: fixed;
   right: 8px;
-  bottom: 36px;
+  bottom: 64px;
   left: 8px;
   display: flex;
   align-items: center;

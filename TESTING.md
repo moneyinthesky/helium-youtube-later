@@ -8,6 +8,12 @@ The automated tests use a fake YouTube and can't press real keys, so run these i
 - [ ] The toolbar icon does the same.
 - [ ] `pnpm check:shortcut` reports both shortcuts as assigned.
 
+- [ ] Open the panel with the shortcut while on a page. ↑ and ↓ work straight away, without clicking the panel.
+- [ ] Open the panel while watching a video further down the list. That video is selected, and scrolled into view.
+- [ ] Enter plays the selected video and hides the panel, and with Zen mode's top bar unpinned, the toolbar goes too.
+- [ ] After Enter, YouTube's own keys work in the pinned tab without clicking it (K to pause).
+- [ ] A key chosen on `chrome://extensions/shortcuts` toggles the panel. For ⌘Y on a Mac, see the README first.
+
 ## Saving
 
 - [ ] On a video, ⌘⇧S shows a card at the top right with its thumbnail and "Saved to YouTube Later", and it appears in the panel with thumbnail, title, channel and length.
