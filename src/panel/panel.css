@@ -1,0 +1,269 @@
+:root {
+  color-scheme: light dark;
+  --bg: #fff;
+  --text: #0f0f0f;
+  --muted: #606060;
+  --hover: #f2f2f2;
+  --line: #e5e5e5;
+  --thumb: #e5e5e5;
+  --accent: #f00;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1b1b1d;
+    --text: #f1f1f1;
+    --muted: #aaa;
+    --hover: #2c2c2f;
+    --line: #333;
+    --thumb: #333;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 13px/18px system-ui, sans-serif;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+header {
+  padding: 12px 12px 6px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+#count,
+#watched-count {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 4px 8px;
+}
+
+.videos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.video {
+  position: relative;
+  border-radius: 8px;
+}
+
+.video:hover,
+.video:focus-within {
+  background: var(--hover);
+}
+
+.open {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  padding: 6px;
+  text-align: left;
+  border-radius: 8px;
+}
+
+.thumb {
+  position: relative;
+  flex: none;
+  width: 128px;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--thumb);
+}
+
+.thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumb img.broken {
+  visibility: hidden;
+}
+
+.time {
+  position: absolute;
+  right: 4px;
+  bottom: 5px;
+  padding: 0 4px;
+  border-radius: 3px;
+  background: rgb(0 0 0 / 80%);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 15px;
+}
+
+.bar {
+  position: absolute;
+  inset: auto 0 0;
+  height: 3px;
+  background: rgb(255 255 255 / 40%);
+}
+
+.bar i {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+.details {
+  min-width: 0;
+  padding-right: 4px;
+}
+
+.title {
+  display: -webkit-box;
+  overflow: hidden;
+  font-weight: 500;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.channel {
+  display: block;
+  overflow: hidden;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Over the thumbnail, so titles keep the full width. */
+.actions {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: none;
+  gap: 4px;
+}
+
+.video:hover .actions,
+.video:focus-within .actions {
+  display: flex;
+}
+
+.actions button {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: rgb(0 0 0 / 75%);
+  color: #fff;
+  font-size: 14px;
+  line-height: 26px;
+}
+
+.actions button:hover {
+  background: #000;
+}
+
+#empty {
+  margin: 24px 12px;
+  color: var(--muted);
+  text-align: center;
+}
+
+#empty kbd {
+  font: inherit;
+  font-weight: 600;
+  color: var(--text);
+}
+
+details {
+  margin-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+summary {
+  padding: 10px 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+details .thumb img {
+  opacity: 0.6;
+}
+
+footer {
+  display: flex;
+  gap: 4px;
+  padding: 4px 8px;
+  border-top: 1px solid var(--line);
+}
+
+footer button {
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+footer button:hover {
+  background: var(--hover);
+}
+
+#snackbar {
+  position: fixed;
+  right: 8px;
+  bottom: 36px;
+  left: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #323232;
+  color: #fff;
+}
+
+#snackbar[hidden] {
+  display: none;
+}
+
+#snackbar-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+#snackbar-undo {
+  flex: none;
+  color: #8ab4f8;
+  font-weight: 600;
+}

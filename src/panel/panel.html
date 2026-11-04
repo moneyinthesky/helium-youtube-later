@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>YouTube Later</title>
+    <link rel="stylesheet" href="panel.css" />
+  </head>
+  <body>
+    <header>
+      <h1>To watch <span id="count"></span></h1>
+    </header>
+    <main>
+      <ul id="to-watch" class="videos"></ul>
+      <p id="empty" hidden></p>
+      <details id="watched-section" hidden>
+        <summary>Watched <span id="watched-count"></span></summary>
+        <ul id="watched" class="videos"></ul>
+      </details>
+    </main>
+    <footer>
+      <button id="export" type="button">Export</button>
+      <button id="import" type="button">Import</button>
+      <input id="import-file" type="file" accept="application/json,.json" hidden />
+    </footer>
+    <div id="snackbar" role="status" hidden>
+      <span id="snackbar-text"></span>
+      <button id="snackbar-undo" type="button">Undo</button>
+    </div>
+    <script type="module" src="panel.js"></script>
+  </body>
+</html>

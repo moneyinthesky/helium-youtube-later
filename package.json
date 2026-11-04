@@ -1,0 +1,27 @@
+{
+  "name": "helium-youtube-later",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A watch-later side panel for YouTube, for Helium and Chrome",
+  "type": "module",
+  "packageManager": "pnpm@8.6.12",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/build.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "check:shortcut": "node scripts/check-shortcut.mjs",
+    "test": "vitest run",
+    "test:e2e": "node scripts/build.mjs --e2e && playwright test",
+    "icons": "node scripts/icons.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@types/chrome": "^0.3.7",
+    "@types/node": "^26.6.6",
+    "esbuild": "^0.28.2",
+    "playwright-core": "^1.64.1",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  },
+  "license": "MIT"
+}
